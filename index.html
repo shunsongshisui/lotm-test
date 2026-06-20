@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>命运之门 · AMTI & LOM 人格测试</title>
+    <title>命运之门 · 人格测试合集</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap');
@@ -35,7 +35,7 @@
         body::before {
             content: '';
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
+            inset: 0;
             background:
                 radial-gradient(ellipse at 25% 30%, rgba(201,149,60,0.03) 0%, transparent 50%),
                 radial-gradient(ellipse at 75% 70%, rgba(184,156,224,0.03) 0%, transparent 50%);
@@ -65,10 +65,12 @@
         }
 
         .header { text-align: center; margin-bottom: 36px; }
-        .logo-main { font-size: 44px; font-weight: 900; letter-spacing: 6px; line-height: 1.2; }
-        .logo-main .g { background: linear-gradient(180deg, var(--cream) 0%, var(--gold) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .logo-main .p { background: linear-gradient(180deg, var(--cream) 0%, var(--purple) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .logo-main .sep { color: var(--border); -webkit-text-fill-color: var(--border); }
+        .logo-main {
+            font-size: 44px; font-weight: 900; letter-spacing: 8px;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--cream) 50%, var(--purple) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; line-height: 1.2;
+        }
         .logo-sub { font-size: 13px; letter-spacing: 6px; color: var(--border); margin-top: 6px; font-weight: 400; }
         .desc { margin-top: 18px; font-size: 15px; color: var(--cream); opacity: 0.6; line-height: 1.8; text-align: center; }
 
@@ -108,7 +110,7 @@
             letter-spacing: 2px; transition: all 0.25s;
             background: rgba(255,255,255,0.01);
         }
-        .btn-link:hover { background: rgba(255,255,255,0.04); border-color: var(--gold-dim); }
+        .btn-link:hover { background: rgba(255,255,255,0.04); }
         .card-gold .btn-link:hover { border-color: var(--gold); color: var(--gold); }
         .card-purple .btn-link:hover { border-color: var(--purple); color: var(--purple); }
         .btn-link .small { font-size: 11px; color: var(--gold-dim); letter-spacing: 1px; }
@@ -131,13 +133,11 @@
 <div class="container">
     <div class="panel">
         <div class="header">
-            <div class="logo-main">
-                <span class="g">AMTI</span><span class="sep"> · </span><span class="p">LOM</span>
-            </div>
-            <div class="logo-sub">命运之门 · 人格测试</div>
+            <div class="logo-main">命运之门</div>
+            <div class="logo-sub">人格测试合集</div>
             <div class="desc">
-                两套测试体系，两种窥探命运的方式。<br>
-                选择你的路。
+                世间众生有万千面相——<br>
+                选一扇门，看看门后是哪一面镜子。
             </div>
         </div>
 
@@ -165,7 +165,7 @@
                         人格谱系 <span class="small">· 18 道抉择 + 雷达图</span>
                     </a>
                     <a class="btn-link" href="fate.html">
-                        天命版 <span class="small">· 18 道天意 + 隐藏选项</span>
+                        天命版 <span class="small">· 18 道天意</span>
                     </a>
                 </div>
             </div>
