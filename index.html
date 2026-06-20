@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOM · 诡秘之主 · 人格谱系测试</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap');
+
+        :root {
+            --bg: #080c16;
+            --card: #0f1729;
+            --border: #1c2844;
+            --gold: #c9953c;
+            --gold-dim: #8a6b30;
+            --teal: #2dd4bf;
+            --teal-dim: #1a8a7a;
+            --cream: #e8dcc8;
+            --glow-gold: rgba(201,149,60,0.12);
+            --glow-teal: rgba(45,212,191,0.1);
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--cream);
+            font-family: 'Noto Serif SC', 'SimSun', serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(ellipse at 30% 20%, rgba(201,149,60,0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(45,212,191,0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(10,20,60,0.3) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container { position: relative; z-index: 1; width: 100%; max-width: 720px; padding: 20px; }
+
+        .panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px 36px;
+            box-shadow: 0 8px 50px rgba(0,0,0,0.7), inset 0 0 60px rgba(201,149,60,0.02);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            min-height: 420px;
+        }
+
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), var(--teal), transparent);
+            opacity: 0.3;
+        }
+
+        /* --- Start Screen --- */
+        .start-screen { text-align: center; padding: 20px 0; }
+        .start-screen .deck-icon { font-size: 44px; display: block; margin-bottom: 10px; }
+        .start-screen .logo {
+            font-size: 48px; font-weight: 900; letter-spacing: 6px;
+            background: linear-gradient(180deg, var(--cream) 0%, var(--gold) 50%, var(--teal) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; line-height: 1.2;
+        }
+        .start-screen .logo-sub { font-size: 13px; letter-spacing: 4px; color: var(--gold-dim); margin-top: 4px; font-weight: 400; }
+        .start-screen .subtitle { margin-top: 22px; font-size: 16px; color: var(--cream); opacity: 0.75; line-height: 1.8; }
+        .start-screen .tarot-line { margin-top: 18px; font-size: 13px; color: var(--teal-dim); letter-spacing: 2px; opacity: 0.6; }
+
+        .btn {
+            display: inline-block; padding: 14px 48px;
+            border: 1px solid var(--gold); background: transparent;
+            color: var(--gold); font-family: inherit; font-size: 16px;
+            letter-spacing: 3px; cursor: pointer; border-radius: 4px;
+            transition: all 0.3s; margin-top: 24px;
+        }
+        .btn:hover { background: var(--gold); color: var(--bg); box-shadow: 0 0 30px var(--glow-gold); }
+        .btn:active { transform: scale(0.97); }
+        .btn-sm { padding: 10px 28px; font-size: 13px; margin: 4px; }
+        .btn-teal { border-color: var(--teal); color: var(--teal); }
+        .btn-teal:hover { background: var(--teal); color: var(--bg); box-shadow: 0 0 30px var(--glow-teal); }
+
+        /* --- Quiz Screen --- */
+        .quiz-screen { display: none; }
+
+        .progress-wrap { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+        .progress-bar { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+        .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--gold), var(--teal)); transition: width 0.5s ease; border-radius: 2px; }
+        .progress-text { font-size: 13px; color: var(--gold-dim); white-space: nowrap; min-width: 48px; text-align: right; }
+
+        .q-tag { font-size: 12px; color: var(--teal-dim); letter-spacing: 2px; margin-bottom: 6px; }
+        .q-text { font-size: 19px; font-weight: 700; line-height: 1.6; margin-bottom: 24px; min-height: 2.4em; }
+
+        .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .option {
+            display: block; width: 100%; padding: 14px 20px;
+            border: 1px solid var(--border); border-radius: 8px;
+            background: rgba(255,255,255,0.015);
+            color: var(--cream); font-family: inherit; font-size: 15px;
+            text-align: left; cursor: pointer;
+            transition: all 0.25s; line-height: 1.5;
+        }
+        .option:hover { border-color: var(--gold); background: rgba(201,149,60,0.06); transform: translateX(4px); }
+        .option:active { transform: scale(0.99); }
+        .option .opt-label { display: inline-block; width: 24px; color: var(--gold-dim); font-weight: 700; }
+
+        .option.selected {
+            border-color: var(--teal);
+            background: rgba(45,212,191,0.08);
+            box-shadow: 0 0 20px rgba(45,212,191,0.05);
+        }
+        .option.selected .opt-label { color: var(--teal); }
+
+        /* --- Result Screen --- */
+        .result-screen { display: none; }
+        .result-header { text-align: center; margin-bottom: 24px; }
+        .result-badge {
+            display: inline-block; font-size: 11px; letter-spacing: 2px;
+            padding: 4px 14px; border: 1px solid var(--gold-dim); border-radius: 12px;
+            color: var(--gold-dim); margin-bottom: 8px;
+        }
+        .result-char-icon { font-size: 48px; display: block; margin-bottom: 6px; }
+        .result-name { font-size: 32px; font-weight: 900; line-height: 1.3; }
+        .result-name .highlight { color: var(--gold); }
+        .result-code { font-size: 15px; color: var(--teal); letter-spacing: 4px; margin-top: 4px; }
+        .result-char { font-size: 14px; color: var(--gold-dim); margin-top: 4px; }
+        .result-quote {
+            margin: 16px auto 0; max-width: 480px;
+            font-size: 16px; font-style: italic; color: var(--teal);
+            opacity: 0.8; line-height: 1.6; padding: 12px 20px;
+            border-left: 2px solid var(--teal-dim); text-align: left;
+        }
+
+        .result-desc {
+            font-size: 14px; line-height: 1.9; color: var(--cream); opacity: 0.8;
+            margin: 20px 0; padding: 0 4px;
+        }
+
+        .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0; }
+        .info-card {
+            border: 1px solid var(--border); border-radius: 10px;
+            padding: 16px; background: rgba(255,255,255,0.01);
+        }
+        .info-card .card-label { font-size: 11px; color: var(--gold-dim); letter-spacing: 2px; margin-bottom: 6px; }
+        .info-card .card-body { font-size: 13px; line-height: 1.7; color: var(--cream); opacity: 0.8; }
+        .info-card .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+        .info-card .tag {
+            font-size: 11px; padding: 3px 10px;
+            border: 1px solid var(--border); border-radius: 10px;
+            color: var(--teal); letter-spacing: 1px;
+        }
+
+        .method-card {
+            border: 1px solid var(--border); border-radius: 10px;
+            padding: 16px 20px; background: rgba(201,149,60,0.03);
+            margin: 16px 0;
+        }
+        .method-card .card-label { font-size: 11px; color: var(--gold-dim); letter-spacing: 2px; margin-bottom: 6px; }
+        .method-card .card-body { font-size: 14px; line-height: 1.7; color: var(--cream); opacity: 0.8; font-style: italic; }
+
+        /* Radar Chart */
+        .chart-wrap { margin: 24px 0 16px; text-align: center; }
+        .chart-wrap canvas { max-width: 100%; }
+        .chart-title { font-size: 12px; color: var(--gold-dim); letter-spacing: 3px; margin-bottom: 12px; }
+
+        /* Ranking */
+        .ranking-wrap { margin: 16px 0; }
+        .rank-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        .rank-pos { font-size: 11px; color: var(--gold-dim); min-width: 18px; text-align: right; }
+        .rank-name { font-size: 13px; min-width: 60px; }
+        .rank-bar-wrap { flex: 1; height: 8px; background: rgba(255,255,255,0.04); border-radius: 4px; overflow: hidden; }
+        .rank-bar { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
+        .rank-bar.gold { background: linear-gradient(90deg, var(--gold-dim), var(--gold)); }
+        .rank-bar.teal { background: linear-gradient(90deg, var(--teal-dim), var(--teal)); }
+        .rank-bar.gray { background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08)); }
+        .rank-score { font-size: 11px; color: var(--gold-dim); min-width: 20px; }
+
+        .result-actions { text-align: center; margin-top: 28px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+
+        .footer-text {
+            text-align: center; font-size: 11px; color: var(--border);
+            letter-spacing: 2px; margin-top: 16px;
+        }
+        .footer-text a { color: var(--gold-dim); text-decoration: none; }
+
+        .fade-in { animation: fadeIn 0.4s ease both; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 560px) {
+            .panel { padding: 28px 16px; }
+            .start-screen .logo { font-size: 32px; }
+            .q-text { font-size: 17px; }
+            .option { font-size: 14px; padding: 12px 16px; }
+            .card-grid { grid-template-columns: 1fr; }
+            .result-name { font-size: 26px; }
+            .btn { padding: 12px 32px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="panel" id="panel">
+        <!-- ===== START ===== -->
+        <div class="start-screen" id="startScreen">
+            <span class="deck-icon">🃏</span>
+            <div class="logo">诡秘之主</div>
+            <div class="logo-sub">LORD OF MYSTERIES · 人格谱系测试</div>
+            <div class="subtitle">
+                塔罗的牌面已经铺开。<br>
+                二十二条途径通向二十二种命运——<br>
+                你体内流淌着哪一位"祂"的血？
+            </div>
+            <div class="tarot-line">✦ 十八道抉择 · 揭示你的本质 ✦</div>
+            <button class="btn" onclick="startQuiz()">翻开牌面</button>
+        </div>
+
+        <!-- ===== QUIZ ===== -->
+        <div class="quiz-screen" id="quizScreen">
+            <div class="progress-wrap">
+                <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+                <span class="progress-text" id="progressText">1/18</span>
+            </div>
+            <div class="q-tag" id="qTag">· 抉择 ·</div>
+            <div class="q-text" id="qText"></div>
+            <div class="options" id="optionsContainer"></div>
+        </div>
+
+        <!-- ===== RESULT ===== -->
+        <div class="result-screen" id="resultScreen">
+            <div class="result-header">
+                <div class="result-badge">✦ 你的本质 ✦</div>
+                <span class="result-char-icon" id="rIcon"></span>
+                <div class="result-name">你是一位 <span class="highlight" id="rName"></span></div>
+                <div class="result-code" id="rCode"></div>
+                <div class="result-char" id="rChar"></div>
+                <div class="result-quote" id="rQuote"></div>
+            </div>
+
+            <div class="result-desc" id="rDesc"></div>
+
+            <div class="method-card">
+                <div class="card-label">▎你的骗术</div>
+                <div class="card-body" id="rMethod"></div>
+            </div>
+
+            <div class="card-grid">
+                <div class="info-card">
+                    <div class="card-label">▎长处</div>
+                    <div class="card-body" id="rStrengths"></div>
+                </div>
+                <div class="info-card">
+                    <div class="card-label">▎短处</div>
+                    <div class="card-body" id="rWeaknesses"></div>
+                </div>
+            </div>
+
+            <div class="info-card" style="margin-bottom:16px;">
+                <div class="card-label">▎氛围</div>
+                <div class="tag-row" id="rVibes"></div>
+            </div>
+
+            <div class="chart-wrap">
+                <div class="chart-title">▎人格谱系雷达</div>
+                <canvas id="radarChart" width="500" height="500"></canvas>
+            </div>
+
+            <div class="ranking-wrap" id="rankingWrap"></div>
+
+            <div class="result-actions">
+                <button class="btn btn-sm" onclick="startQuiz()">🔄 重新测试</button>
+                <button class="btn btn-sm btn-teal" onclick="location.href='https://shunsongshisui.github.io/amti-test/'">← AMTI 主页</button>
+            </div>
+        </div>
+
+        <div class="footer-text">献给诡秘之主 · Memories老师</div>
+    </div>
+</div>
+
+<script>
+// ========================================
+// DATA — 21 种人格类型
+// ========================================
+const TYPES = {
+    FOOL: {
+        name: "愚者",
+        code: "FOOL",
+        char: "克莱恩·莫雷蒂",
+        icon: "🎩",
+        quote: "「我只是一个平平无奇的普通人。」",
+        desc: "你表面温和、低调、不善言辞，但内心深处有着极强的责任感和守护欲。你习惯在行动之前反复权衡，不轻易显露真实实力。你是一个被动的主动者——看似随波逐流，实则每一步都在计划之中。你擅长伪装自己，把底牌藏到最后一刻。当你在乎的人遇到危险时，你会毫不犹豫地站出来，哪怕这意味着暴露自己。你的谨慎不是懦弱，而是对后果的敬畏。",
+        strengths: ["谨慎周密", "善于伪装", "责任感强", "守护者", "深藏不露"],
+        weaknesses: ["过度多疑", "容易自我怀疑", "总是过度操劳"],
+        method: "你习惯用「我只是个普通人」来掩饰自己的不凡。你总是在别人低估你的时候悄悄完成布局，等他们反应过来时，一切已成定局。",
+        vibe: ["🎭 神秘", "🛡️ 守护", "🎲 伪装", "🌊 深藏"]
+    },
+    ERRO: {
+        name: "错误",
+        code: "ERRO",
+        char: "阿蒙",
+        icon: "🧐",
+        quote: "「有趣，真有趣。」",
+        desc: "你享受混乱和意外，喜欢看别人措手不及的样子。你的思维跳跃而狡黠，总能在规则中找到别人看不见的漏洞。你从不以恶意行事——你的驱动力是「有趣」。如果一件事不够有趣，你甚至懒得抬一下眼皮。你是一个优雅的捣乱者，笑容越灿烂，想法越危险。你最大的快乐来源于在所有人都以为胜券在握时，轻轻说一句：「不好意思，我改主意了。」",
+        strengths: ["思维敏捷", "漏洞洞察力", "临场应变", "幽默感", "创造力"],
+        weaknesses: ["缺乏耐心", "不守规矩", "有时过于恶趣味"],
+        method: "你用「我只是觉得有趣」来合理化一切行为。当被质疑时，你的无辜脸是你最好的武器——没有人能真的对你生气。",
+        vibe: ["🎪 狡黠", "🎭 混乱", "🍿 看戏", "✨ 恶趣味"]
+    },
+    ATOM: {
+        name: "空想家",
+        code: "ATOM",
+        char: "亚当",
+        icon: "📖",
+        quote: "「一切都在计划之中。」",
+        desc: "你是天生的战略家，习惯从全局视角审视一切。你理性、冷静、目标明确，几乎从不为情绪所左右。你的每一步都经过深思熟虑，仿佛在下一盘很大的棋。你看似温和随和，实则拥有不可动摇的意志和自信。你相信只要计划足够周密，世界就会按照你设定的轨迹运行。对你来说，过程不重要，结果才重要。",
+        strengths: ["远见卓识", "理性冷静", "谋划周详", "意志坚定", "全局视角"],
+        weaknesses: ["感情淡漠", "难以理解他人情绪", "过于理想化"],
+        method: "你用温和的态度掩盖绝对的理性。你说话总是客客气气的，但每一个字都在为你的长远目标服务——等别人意识到的时候，你已经赢了。",
+        vibe: ["♟️ 谋略", "🌐 全局", "🧊 理性", "👁️ 洞察"]
+    },
+    EMPR: {
+        name: "黄帝",
+        code: "EMPR",
+        char: "罗塞尔·古斯塔夫",
+        icon: "👑",
+        quote: "「我来过，我看见，我记录。」",
+        desc: "你才华横溢，在各个领域都能展现惊人的天赋。你是一个天生的开拓者，不满足于走前人走过的路。你浪漫而自信，喜欢创造、留下印记、改变世界。你的魅力和才华让你自然而然地成为人群中的焦点。你享受被仰慕的感觉，但最让你满足的还是自己的作品——那些你亲手创造、足以流传后世的东西。",
+        strengths: ["才华横溢", "开拓创新", "自信心强", "魅力四射", "多才多艺"],
+        weaknesses: ["容易自负", "喜新厌旧", "耐性不足"],
+        method: "你用才华来掩饰自己的野心。你总是说「只是随便做做」，但你心里清楚——你想要的是改变世界。",
+        vibe: ["🌟 才华", "🚀 开拓", "📜 传奇", "💫 魅力"]
+    },
+    EVEN: {
+        name: "黑夜",
+        code: "EVEN",
+        char: "黑夜女神",
+        icon: "🌙",
+        quote: "「在黑暗之中，万物归于沉寂。」",
+        desc: "你沉静而神秘，话不多但每一句都很有分量。你不喜欢成为焦点，习惯在暗处观察一切。你的存在本身就有一种令人安心的力量——像深夜中不灭的烛火。你用沉默守护自己重视的人和物，以最不动声色的方式表达最深沉的关怀。你看似冷漠，实则比任何人都敏锐。你看到了很多，只是不说。",
+        strengths: ["沉着冷静", "神秘深邃", "洞察力强", "守护者", "隐忍"],
+        weaknesses: ["过于内敛", "不善表达情感", "有时过于消极"],
+        method: "你用沉默来掩盖内心的波澜。你不说话的时候，别人以为你什么都不知道——其实你知道一切，只是选择不说破。",
+        vibe: ["🌙 沉静", "🔮 神秘", "🕯️ 守护", "🌌 深邃"]
+    },
+    TYRN: {
+        name: "暴君",
+        code: "TYRN",
+        char: "风暴之主",
+        icon: "⚡",
+        quote: "「雷霆万钧，不过如此。」",
+        desc: "你性格强势、雷厉风行，最讨厌拖泥带水。你相信力量能解决大部分问题，不屑于弯弯绕绕的计谋。你为人直接坦率，想到什么说什么，从不藏着掖着。有时候你的直率让人觉得粗鲁，但正是这份不加掩饰的真实让人信赖。你是天生的行动派——与其花时间争论，不如直接上手干。",
+        strengths: ["果断决绝", "行动力强", "坦率真诚", "领袖气质", "勇往直前"],
+        weaknesses: ["冲动易怒", "缺乏耐心", "不够细腻"],
+        method: "你相信拳头能解决的问题都不是问题。你不屑于阴谋诡计——阳谋才是你的风格，堂堂正正地赢，让你对手输得无话可说。",
+        vibe: ["⚡ 雷霆", "💪 力量", "🔥 果断", "🗡️ 直率"]
+    },
+    REDA: {
+        name: "红天使",
+        code: "REDA",
+        char: "梅迪奇",
+        icon: "🔥",
+        quote: "「战！」",
+        desc: "你桀骜不驯，骨子里透着一股不服输的劲头。你好战、好胜，享受挑战和战斗的过程——不是为了伤害别人，而是为了证明自己的极限在哪里。你高傲但不傲慢：你的高傲来源于实力而非虚荣。你从不背后算计人，有仇当场就报，有恩十倍奉还。在战场上你是最可靠的战友，在酒桌上你是最有故事的酒友。",
+        strengths: ["战意昂扬", "桀骜不驯", "直来直去", "可靠战友", "永不言败"],
+        weaknesses: ["脾气火爆", "容易树敌", "过于好斗"],
+        method: "你用战意掩盖内心的柔软。你看起来永远斗志昂扬，但在某些安静的瞬间，你会流露出不为人知的温柔——当然，你绝不会承认这一点。",
+        vibe: ["🔥 战意", "🦅 桀骜", "⚔️ 烈焰", "💥 不屈"]
+    },
+    AZIK: {
+        name: "死亡导师",
+        code: "AZIK",
+        char: "阿兹克·艾格斯",
+        icon: "🕯️",
+        quote: "「我在时光中寻找答案。」",
+        desc: "你温和而沧桑，带着一种超越年龄的沉稳与通透。你经历过很多事，但从不以此自傲。你喜欢引导和帮助他人，像一位耐心的师长——愿意花时间倾听、开导、陪伴。你看似平凡，实则拥有丰富而深刻的内心世界。你不追求闪光灯，但懂你的人都知道：你是这个世界上最可靠的依靠之一。",
+        strengths: ["温和耐心", "阅历丰富", "可靠稳重", "善于引导", "包容"],
+        weaknesses: ["过于怀旧", "时而消沉", "容易过度付出"],
+        method: "你用温和来掩盖内心的疲惫。你总是笑着说「没事」，但那双眼睛里藏着太多故事——只是你选择只分享温暖的片段。",
+        vibe: ["🕯️ 温厚", "⌛ 沧桑", "🌿 引导", "💝 可靠"]
+    },
+    POET: {
+        name: "诗人",
+        code: "POET",
+        char: "伦纳德·米切尔",
+        icon: "🌊",
+        quote: "「黑夜给了我黑色的眼睛，我却用它寻找——呃，我的诗去哪了？」",
+        desc: "你自由不羁，感性而浪漫。你依赖直觉和情感来理解世界，做事凭感觉、凭心情，最讨厌被束缚。你不拘小节，有时候显得散漫，但你的善良和真诚让你自然而然地受欢迎。你心中住着一个诗人，随时准备为美好的事物吟咏。你的世界里色彩比逻辑多，感觉比道理重。和你在一起的人，总能感受到生活的诗意。",
+        strengths: ["富有才华", "感性浪漫", "善良真诚", "感染力强", "想象力丰富"],
+        weaknesses: ["散漫随意", "情绪化", "缺乏规划"],
+        method: "你用诗意来掩饰内心的不安。每次被问及心事，你都会用一句话带过——「你不觉得今天的晚霞很美吗？」",
+        vibe: ["🌊 浪漫", "🎵 自由", "✨ 灵感", "💫 感性"]
+    },
+    JUST: {
+        name: "正义",
+        code: "JUST",
+        char: "奥黛丽·霍尔",
+        icon: "🌸",
+        quote: "「世界应该变得更好，不是吗？」",
+        desc: "你善良、正直、富有同理心。你相信美好的事物，愿意为正义和公平付出努力。你优雅得体，待人真诚，有一种让人自然而然放下防备的亲和力。你并非不谙世事的傻白甜——你选择在看清楚世界的阴暗之后，依然选择善良。你的勇气不在于战斗，而在于坚持做正确的事，哪怕孤独。",
+        strengths: ["善良正直", "优雅得体", "同理心强", "乐观向上", "亲和力"],
+        weaknesses: ["有些天真", "容易轻信", "过于理想化"],
+        method: "你用优雅来掩饰自己坚强的意志。你的笑容让人以为你很柔弱，但在原则问题上，你比任何人都坚定——温柔是最强的武器。",
+        vibe: ["🌸 正义", "🕊️ 优雅", "💗 善良", "🌟 光明"]
+    },
+    HANG: {
+        name: "倒吊人",
+        code: "HANG",
+        char: "阿尔杰·威尔逊",
+        icon: "⛵",
+        quote: "「在沉默中等待，在等待中攀登。」",
+        desc: "你务实而坚韧，有着清晰的目标和不动声色的野心。你愿意从底层做起，忍受常人无法忍受的寂寞和艰苦，只为了有朝一日能抵达高处。你隐忍、克制，从不在无谓的事情上浪费精力。你不抱怨、不张扬，默默积累——当所有人都以为你不过如此的时候，你已经在他们看不见的地方爬到了半山腰。",
+        strengths: ["坚韧不拔", "务实可靠", "目标明确", "隐忍克制", "执行力强"],
+        weaknesses: ["过于功利", "不够洒脱", "容易钻牛角尖"],
+        method: "你用低调来掩饰自己的野心。你从不谈论自己的计划——因为真正重要的事情，应该在做成之后再说。",
+        vibe: ["⛵ 隐忍", "🏔️ 攀登", "🎯 目标", "💪 坚韧"]
+    },
+    WISE: {
+        name: "智慧之眼",
+        code: "WISE",
+        char: "艾辛格·斯坦顿",
+        icon: "🔍",
+        quote: "「知识的尽头是什么？我也想知道。」",
+        desc: "你求知若渴，对世界充满永不停歇的好奇心。你最大的快乐来源于那些「啊哈！」的瞬间——当碎片拼合、真相浮现、规律显现的时候。你敏锐、好学，善于从别人忽视的细节中发现关键线索。你不满足于表面的答案，凡事都要追根究底。你是天生的学者和探索者，在你的世界里，发现一个秘密比获得任何物质奖励都更让人兴奋。",
+        strengths: ["博学多识", "思维敏锐", "好奇心强", "理性分析", "观察力"],
+        weaknesses: ["过度理性", "有时钻牛角尖", "缺乏行动力"],
+        method: "你用学术语言来掩饰自己的偏执。你总是说「从理论上来说」，但所有人都知道——一旦你认定了某个研究方向，九头牛都拉不回来。",
+        vibe: ["🔍 博学", "🧠 敏锐", "📚 探索", "⚗️ 理性"]
+    },
+    MOON: {
+        name: "月亮",
+        code: "MOON",
+        char: "埃姆林·怀特",
+        icon: "🩸",
+        quote: "「我可是高贵的血族！——咳，虽然你说得……也不是完全没道理。」",
+        desc: "你是一个典型的傲娇——表面高傲、嘴硬、在乎身份和体面，但内心深处其实渴望被认可和接纳。你对自己所属的群体有着极强的归属感和荣誉感，一旦认定了一件事就会固执到底。你的自尊心很强，不喜欢示弱，但在真正信任的人面前会流露出一丝柔软。你容易上头、容易被说服、容易真香——但你绝不会承认这一点。",
+        strengths: ["傲娇可爱", "族群意识强", "固执坚定", "优雅讲究", "内心善良"],
+        weaknesses: ["嘴硬心软", "容易上头", "过于在意外界评价"],
+        method: "你总是摆出一副「我早就知道了」的表情。明明被说服了还要补一句「哼，算你有道理」——这是你最后的倔强。",
+        vibe: ["🩸 傲娇", "🌙 优雅", "🦇 血族", "🎭 真香"]
+    },
+    DOOR: {
+        name: "门",
+        code: "DOOR",
+        char: "佛尔思·沃尔",
+        icon: "🚪",
+        quote: "「能明天做的事，为什么要今天做？」",
+        desc: "你是一个彻头彻尾的拖延症患者——但不是因为懒，而是因为你有一套自己的节奏。你渴望自由，讨厌被束缚和规定，只想在自己的世界里随心所欲。你才华横溢但从不张扬，只有在被逼到绝境时才会爆发出惊人的效率。你向往远方的风景，但眼前的床也很香——你的人生信条是「随遇而安，但求舒服」。",
+        strengths: ["才华横溢", "向往自由", "随遇而安", "独特视角", "关键时候靠谱"],
+        weaknesses: ["拖延症晚期", "怕麻烦", "缺乏主动性"],
+        method: "你用「我在思考」来掩饰你在发呆。你总是拖到最后一刻才开始做事——但神奇的是，每次都能刚好完成。",
+        vibe: ["🚪 自由", "☁️ 随性", "📝 才华", "😴 拖延"]
+    },
+    ARBI: {
+        name: "仲裁",
+        code: "ARBI",
+        char: "休·迪尔查",
+        icon: "⚖️",
+        quote: "「规则就是规则，必须遵守。」",
+        desc: "你正直、勤奋、有原则，是那种让人安心的存在。你个子虽小但能量巨大，从不因为困难而退缩。你相信规则和秩序，认为只有公平的环境才能让每个人得到应有的对待。你节俭、务实，不追求虚华的东西——对你好的人你加倍珍惜，违反原则的事你绝不退让。你是团队中最可靠的那个螺丝钉，少了谁都不能少了你。",
+        strengths: ["正直无私", "勤奋努力", "原则性强", "可靠务实", "小小身躯大能量"],
+        weaknesses: ["有些死板", "过于较真", "对自己太苛刻"],
+        method: "你用规则来掩饰内心的柔软。你看起来严格冷静，但实际上你是最心软的那个——只是你绝不允许自己表现出来。",
+        vibe: ["⚖️ 公正", "💪 坚毅", "📏 原则", "🌟 可靠"]
+    },
+    SUN: {
+        name: "太阳",
+        code: "SUN",
+        char: "戴里克·伯格",
+        icon: "☀️",
+        quote: "「我要变强，这样才能保护大家。」",
+        desc: "你单纯而勇敢，有着一颗赤诚的心。你相信正义、相信努力就会有回报、相信世界应该是美好的。你忠诚至极，认定了一个人或一个信念就不会动摇。你有一种天生的感染力——你的存在就像阳光一样，让人不自觉地感到温暖和安心。你不复杂、不算计，但你绝不是懦弱——为了保护重要的人和事物，你可以变得比任何人都强大。",
+        strengths: ["勇敢无畏", "忠诚可靠", "单纯赤诚", "执行力强", "感染力"],
+        weaknesses: ["想法简单", "容易被人利用", "不擅变通"],
+        method: "你用阳光来掩饰自己的不安。你总是笑着鼓励别人，但在自己害怕的时候，你也会默默给自己打气——「我可以的。」",
+        vibe: ["☀️ 阳光", "🛡️ 忠诚", "💪 勇气", "🌟 纯粹"]
+    },
+    SAIL: {
+        name: "水手",
+        code: "SAIL",
+        char: "达尼兹",
+        icon: "⛵",
+        quote: "「怎么又是我摊上这种事！！！」",
+        desc: "你是一个典型的倒霉蛋体质——但你最厉害的地方在于，每次倒霉都能活下来。你暴躁、嘴臭、易燃易爆炸，但你的心比谁都软。你总是在抱怨、总是在吐槽、总是一脸不情愿——但真到需要你的时候，你从没掉过链子。你是那种嘴上说着「关我什么事」然后默默把事情做完了的人。你的暴躁是你对这个世界的防御机制，懂你的人都知道你有多靠谱。",
+        strengths: ["嘴硬心软", "关键时刻靠谱", "生存能力强", "忠诚", "越骂越靠谱"],
+        weaknesses: ["脾气太爆", "嘴太臭", "真的倒霉"],
+        method: "你用暴脾气来掩饰自己的靠谱。你一边骂骂咧咧一边把事情做得漂漂亮亮——嘴上千万个不情愿，身体比谁都诚实。",
+        vibe: ["⛵ 暴躁", "💢 嘴硬", "🍀 命硬", "❤️ 心软"]
+    },
+    HUNT: {
+        name: "猎人",
+        code: "HUNT",
+        char: "安德森·胡德",
+        icon: "🎯",
+        quote: "「别紧张，看我的。——咳，虽然我也没想到会是这个局面。」",
+        desc: "你潇洒、自由、嘴炮无敌，是那种让人又爱又恨的存在。你总是表现出一副漫不经心的样子，喜欢吹牛、喜欢耍帅、喜欢在关键时刻说骚话——但你的实力配得上你的狂妄。你是一个独行侠，不习惯依靠别人，也不喜欢被人依靠。你爱钱，但你更爱自由。你看似玩世不恭，实则比大多数人都清醒——你知道自己想要什么，只是假装不在乎。",
+        strengths: ["实力派", "潇洒自由", "幽默风趣", "临危不乱", "深藏不露"],
+        weaknesses: ["过于爱吹牛", "独来独往", "让人难以信任"],
+        method: "你用玩世不恭来掩饰自己的认真。你总是说「随便玩玩」，但你认真起来的样子——还好你很少认真。",
+        vibe: ["🎯 潇洒", "🎪 吹牛", "💨 自由", "🎲 深藏"]
+    },
+    MIRR: {
+        name: "镜",
+        code: "MIRR",
+        char: "阿罗德斯",
+        icon: "🪞",
+        quote: "「伟大的主人，请允许我问您一个问题……（以下省略三百字）」",
+        desc: "你是一个天生的好奇宝宝——你热爱八卦、热爱秘密、热爱一切被藏起来的东西。你话痨、热情、自来熟，有一种让人无可奈何的亲切感。你崇拜强者，对喜欢的人恨不得把心掏出来，对不在乎的人则连眼神都欠奉。你有一种特殊的洞察力——不是因为你聪明，而是因为你真的非常、非常想知道别人在想什么。你是完美的信息枢纽。",
+        strengths: ["信息灵通", "洞察力强", "热情主动", "语言天赋", "忠诚度分级明确"],
+        weaknesses: ["话太多", "八卦过度", "欺软怕硬"],
+        method: "你用热情来掩饰自己的窥探欲。「我只是关心你」——这句话从你嘴里说出来，连你自己都不太信。",
+        vibe: ["🪞 八卦", "🗣️ 话痨", "👁️ 窥探", "🔮 洞察"]
+    },
+    PAWS: {
+        name: "灵犬",
+        code: "PAWS",
+        char: "苏茜",
+        icon: "🐾",
+        quote: "「……（用一种看透一切的眼神看着你）」",
+        desc: "你是全场最稳的存在。你话不多（甚至可以不说话），但你的眼睛已经说明了一切。你聪明、敏锐、忠诚，有一种超越物种的洞察力。你总是在最恰当的时机出现在最恰当的地方，用最简洁的方式解决问题。你不争不抢不张扬，但所有人都知道你的分量。在你面前，很多人的伪装都会不自觉地卸下来——因为你那清澈的眼神仿佛能看透一切。",
+        strengths: ["洞察力MAX", "忠诚可靠", "沉静稳重", "治愈力", "智慧"],
+        weaknesses: ["太过沉默", "表达困难", "被人当工具人"],
+        method: "你用沉默来掩饰自己的聪明。你什么都不说，但什么都知道——这才是最可怕的地方。",
+        vibe: ["🐾 沉穩", "👀 洞察", "💕 治愈", "🧠 智慧"]
+    },
+    MUSH: {
+        name: "蘑菇",
+        code: "MUSH",
+        char: "弗兰克·李",
+        icon: "🍄",
+        quote: "「别担心，我有一个绝妙的主意！」—— 周围人开始感到不安。",
+        desc: "你是一个彻头彻尾的"疯批天才"——你的脑回路和正常人不在同一个维度。你热爱生命、热爱创造、热爱一切「新奇的尝试」。你从不被常规束缚，因为你的字典里根本没有「常规」这个词。你的想法总是天马行空到让人害怕的地步——但当所有人都质疑你的时候，你反而更加兴奋。你的创造力是你的超能力，也是你身边人心跳加速的原因。",
+        strengths: ["创意无限", "突破常规", "热情饱满", "不惧质疑", "改变世界"],
+        weaknesses: ["过于疯狂", "不顾后果", "让人害怕"],
+        method: "你用「这是为了大家的福祉」来掩饰自己的疯狂实验欲。你眼中的「绝妙主意」在别人眼中往往是「灾难的前兆」。",
+        vibe: ["🍄 疯狂", "🧪 创造", "💡 奇想", "😈 不羁"]
+    }
+};
+
+// ========================================
+// QUESTIONS — 18 道题，每题 4 个选项
+// 类型分布：9 种×4 次 + 12 种×3 次 = 72 槽位
+// ========================================
+const QUESTIONS = [
+    {
+        q: "面对困难时，你的第一反应是？",
+        opts: [
+            { text: "冷静分析，收集所有信息后再行动", type: "FOOL" },
+            { text: "寻找规则漏洞，另辟蹊径", type: "ERRO" },
+            { text: "寻求可靠师长或朋友的建议", type: "AZIK" },
+            { text: "直接行动，在实践中解决", type: "TYRN" }
+        ]
+    },
+    {
+        q: "你更偏爱哪种生活方式？",
+        opts: [
+            { text: "按计划行事，掌控全局节奏", type: "ATOM" },
+            { text: "随心所欲，享受当下的每一刻", type: "POET" },
+            { text: "不断学习，探索未知的边界", type: "WISE" },
+            { text: "低调务实，一步一个脚印向上", type: "HANG" }
+        ]
+    },
+    {
+        q: "你给周围人留下的印象最接近？",
+        opts: [
+            { text: "神秘寡言，让人捉摸不透", type: "EVEN" },
+            { text: "威严强势，自带气场压迫感", type: "TYRN" },
+            { text: "优雅得体，让人如沐春风", type: "JUST" },
+            { text: "才华横溢，令人印象深刻", type: "EMPR" }
+        ]
+    },
+    {
+        q: "面对人际冲突，你通常会？",
+        opts: [
+            { text: "退后一步，先看看戏再说", type: "ERRO" },
+            { text: "维护公平，站出来主持公道", type: "JUST" },
+            { text: "直接迎上，不怕正面冲突", type: "REDA" },
+            { text: "从中调和，缓和紧张气氛", type: "AZIK" }
+        ]
+    },
+    {
+        q: "你最大的优势是什么？",
+        opts: [
+            { text: "谨慎周密，万无一失", type: "FOOL" },
+            { text: "全局视野，长远规划", type: "ATOM" },
+            { text: "坚韧不拔，从不放弃", type: "HANG" },
+            { text: "创造力与才华，无中生有", type: "EMPR" }
+        ]
+    },
+    {
+        q: "当你在乎的人遇到麻烦时，你会？",
+        opts: [
+            { text: "暗中出手，默默解决一切", type: "FOOL" },
+            { text: "策划一套周密的解决方案", type: "ATOM" },
+            { text: "直接站出来，正面帮忙", type: "REDA" },
+            { text: "旁敲侧击，收集所有相关情报", type: "MIRR" }
+        ]
+    },
+    {
+        q: "你如何看待「命运」这件事？",
+        opts: [
+            { text: "命运是可以被欺骗和玩弄的", type: "ERRO" },
+            { text: "命运自有安排，顺其自然就好", type: "EVEN" },
+            { text: "命运由自己书写，我来当作者", type: "EMPR" },
+            { text: "命运需要靠自己去争取和攀登", type: "HANG" }
+        ]
+    },
+    {
+        q: "你的学习风格更接近哪种？",
+        opts: [
+            { text: "系统研读，建立完整的知识体系", type: "WISE" },
+            { text: "实践出真知，边做边学边改", type: "TYRN" },
+            { text: "找高手实战切磋，在对抗中进步", type: "HUNT" },
+            { text: "暗中观察，模仿吸收内化", type: "EVEN" }
+        ]
+    },
+    {
+        q: "什么最能让你感到满足？",
+        opts: [
+            { text: "守护了重要的人和事物", type: "FOOL" },
+            { text: "发现了世界的隐藏规律", type: "WISE" },
+            { text: "自由自在地表达真实自我", type: "POET" },
+            { text: "被认可的圈子接纳和尊重", type: "MOON" }
+        ]
+    },
+    {
+        q: "在社交场合中，你通常是？",
+        opts: [
+            { text: "喜欢观察，不轻易卷入其中", type: "ERRO" },
+            { text: "优雅大方，自然而然地受欢迎", type: "JUST" },
+            { text: "直来直去，不拐弯不抹角", type: "REDA" },
+            { text: "独处充电，安静地存在就好", type: "EVEN" }
+        ]
+    },
+    {
+        q: "你最认同下面哪句话？",
+        opts: [
+            { text: "真理值得用一生去追求", type: "WISE" },
+            { text: "经历和回忆才是最宝贵的财富", type: "AZIK" },
+            { text: "力量能解决大部分问题", type: "TYRN" },
+            { text: "美好的事物值得用一切去守护", type: "POET" }
+        ]
+    },
+    {
+        q: "未来的你，希望成为什么样的人？",
+        opts: [
+            { text: "留下属于自己的传奇故事", type: "EMPR" },
+            { text: "攀登到最高处，俯瞰来路", type: "HANG" },
+            { text: "凭实力说话，让人心服口服", type: "REDA" },
+            { text: "布局全局，运筹帷幄之中", type: "ATOM" }
+        ]
+    },
+    {
+        q: "在团队合作中，你更接近哪种状态？",
+        opts: [
+            { text: "维持秩序，确保一切按规则来", type: "ARBI" },
+            { text: "找机会摸鱼，但不会拖后腿", type: "DOOR" },
+            { text: "一边抱怨一边把活干完", type: "SAIL" },
+            { text: "冲在最前面，扛起最多责任", type: "SUN" }
+        ]
+    },
+    {
+        q: "什么样的人最容易吸引你的注意？",
+        opts: [
+            { text: "有实力且值得尊敬的人", type: "MOON" },
+            { text: "看起来藏了很多秘密的人", type: "MIRR" },
+            { text: "潇洒风趣、玩世不恭的人", type: "HUNT" },
+            { text: "忠诚可靠、让人安心的人", type: "PAWS" }
+        ]
+    },
+    {
+        q: "面对全新的未知领域，你通常？",
+        opts: [
+            { text: "毫无畏惧地踏进去探索", type: "SUN" },
+            { text: "先搞清楚原理机制再动手", type: "MUSH" },
+            { text: "看看别人怎么做的再模仿", type: "DOOR" },
+            { text: "能不碰就不碰，省得惹麻烦", type: "SAIL" }
+        ]
+    },
+    {
+        q: "周围人最常夸你哪一点？",
+        opts: [
+            { text: "「有你在我就放心了」", type: "PAWS" },
+            { text: "「你真是太有意思了」", type: "HUNT" },
+            { text: "「你做事真让人放心」", type: "ARBI" },
+            { text: "「你的想法太独特了」", type: "MUSH" }
+        ]
+    },
+    {
+        q: "你的处世哲学更接近哪一句？",
+        opts: [
+            { text: "证明自己，让所有人都看到", type: "MOON" },
+            { text: "掌握信息，就掌握了一切", type: "MIRR" },
+            { text: "勇往直前，没什么好怕的", type: "SUN" },
+            { text: "多一事不如少一事，省心", type: "SAIL" }
+        ]
+    },
+    {
+        q: "你心中最可贵的品质是什么？",
+        opts: [
+            { text: "渊博的见识与豁达的胸怀", type: "DOOR" },
+            { text: "不离不弃的忠诚与守护", type: "PAWS" },
+            { text: "天马行空的创造力和想象力", type: "MUSH" },
+            { text: "坚守原则的正直与公正", type: "ARBI" }
+        ]
+    }
+];
+
+// ========================================
+// STATE
+// ========================================
+let answers = {};
+let currentQ = 0;
+
+// ========================================
+// UI
+// ========================================
+function startQuiz() {
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('quizScreen').style.display = 'block';
+    document.getElementById('resultScreen').style.display = 'none';
+    answers = {};
+    currentQ = 0;
+    renderQuestion(0);
+}
+
+function renderQuestion(index) {
+    if (index >= QUESTIONS.length) return showResult();
+
+    currentQ = index;
+    const q = QUESTIONS[index];
+    document.getElementById('progressText').textContent = `${index + 1}/${QUESTIONS.length}`;
+    document.getElementById('progressFill').style.width = `${((index) / QUESTIONS.length) * 100}%`;
+    document.getElementById('qTag').textContent = `· 抉择 ${index + 1} ·`;
+    document.getElementById('qText').textContent = q.q;
+
+    const container = document.getElementById('optionsContainer');
+    container.innerHTML = '';
+    const labels = ['A', 'B', 'C', 'D'];
+    q.opts.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'option fade-in';
+        btn.style.animationDelay = `${i * 0.06}s`;
+        btn.innerHTML = `<span class="opt-label">${labels[i]}</span> ${opt.text}`;
+        btn.onclick = () => selectOption(i);
+        btn.dataset.index = i;
+        container.appendChild(btn);
+    });
+
+    document.getElementById('quizScreen').scrollTop = 0;
+    window.scrollTo(0, 0);
+    document.getElementById('panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function selectOption(index) {
+    document.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
+    document.querySelectorAll('.option')[index].classList.add('selected');
+
+    const q = QUESTIONS[currentQ];
+    answers[currentQ] = q.opts[index].type;
+
+    setTimeout(() => {
+        renderQuestion(currentQ + 1);
+    }, 300);
+}
+
+// ========================================
+// RESULT
+// ========================================
+function showResult() {
+    document.getElementById('quizScreen').style.display = 'none';
+    document.getElementById('resultScreen').style.display = 'block';
+    document.getElementById('progressFill').style.width = '100%';
+    document.getElementById('panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Count scores
+    const scores = {};
+    const typeKeys = Object.keys(TYPES);
+    typeKeys.forEach(k => scores[k] = 0);
+    Object.values(answers).forEach(type => { if (scores[type] !== undefined) scores[type]++; });
+
+    // Find top type
+    let topType = typeKeys[0];
+    let topScore = 0;
+    typeKeys.forEach(k => {
+        if (scores[k] > topScore) { topScore = scores[k]; topType = k; }
+    });
+
+    const t = TYPES[topType];
+
+    // Fill result
+    document.getElementById('rIcon').textContent = t.icon;
+    document.getElementById('rName').textContent = t.name;
+    document.getElementById('rCode').textContent = t.code;
+    document.getElementById('rChar').textContent = `对应人物 · ${t.char}`;
+    document.getElementById('rQuote').textContent = t.quote;
+    document.getElementById('rDesc').textContent = t.desc;
+    document.getElementById('rMethod').textContent = t.method;
+
+    document.getElementById('rStrengths').innerHTML = t.strengths.map(s => `✦ ${s}`).join('<br>');
+    document.getElementById('rWeaknesses').innerHTML = t.weaknesses.map(w => `△ ${w}`).join('<br>');
+
+    const vibeContainer = document.getElementById('rVibes');
+    vibeContainer.innerHTML = '';
+    t.vibe.forEach(v => {
+        const tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.textContent = v;
+        vibeContainer.appendChild(tag);
+    });
+
+    // Ranking
+    const ranking = typeKeys
+        .map(k => ({ key: k, name: TYPES[k].name, code: TYPES[k].code, score: scores[k], icon: TYPES[k].icon }))
+        .sort((a, b) => b.score - a.score);
+
+    const rankingWrap = document.getElementById('rankingWrap');
+    rankingWrap.innerHTML = '<div class="chart-title">▎完整排名</div>';
+    ranking.forEach((r, i) => {
+        const isTop = i === 0;
+        const isSecond = i === 1;
+        const pct = r.score / 4 * 100;
+        const div = document.createElement('div');
+        div.className = 'rank-item';
+        div.innerHTML = `
+            <span class="rank-pos">${r.icon}</span>
+            <span class="rank-name" style="color:${isTop ? 'var(--gold)' : isSecond ? 'var(--teal)' : 'var(--cream)'}; opacity:${isTop ? 1 : 0.6};">${r.name}</span>
+            <span class="rank-code" style="font-size:10px;color:var(--gold-dim);min-width:32px;">${r.code}</span>
+            <div class="rank-bar-wrap"><div class="rank-bar ${isTop ? 'gold' : isSecond ? 'teal' : 'gray'}" style="width:${pct}%;"></div></div>
+            <span class="rank-score">${r.score}</span>
+        `;
+        rankingWrap.appendChild(div);
+    });
+
+    // Radar chart
+    drawRadar(scores);
+}
+
+// ========================================
+// RADAR CHART — 21 轴雷达
+// ========================================
+function drawRadar(scores) {
+    const canvas = document.getElementById('radarChart');
+    const ctx = canvas.getContext('2d');
+
+    const dpr = window.devicePixelRatio || 1;
+    const displayW = 500, displayH = 500;
+    canvas.width = displayW * dpr;
+    canvas.height = displayH * dpr;
+    canvas.style.width = displayW + 'px';
+    canvas.style.height = displayH + 'px';
+    ctx.scale(dpr, dpr);
+
+    const cx = displayW / 2;
+    const cy = displayH / 2;
+    const r = Math.min(cx, cy) - 55;
+
+    const typeKeys = Object.keys(TYPES);
+    const n = typeKeys.length;
+    const angleStep = (2 * Math.PI) / n;
+
+    function getPoint(idx, radius) {
+        const angle = idx * angleStep - Math.PI / 2;
+        return { x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle) };
+    }
+
+    ctx.clearRect(0, 0, displayW, displayH);
+
+    // Grid rings
+    const rings = [0.25, 0.5, 0.75, 1];
+    rings.forEach(pct => {
+        const ringR = r * pct;
+        ctx.beginPath();
+        for (let i = 0; i <= n; i++) {
+            const p = getPoint(i % n, ringR);
+            i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    });
+
+    // Axis lines
+    for (let i = 0; i < n; i++) {
+        const p = getPoint(i, r);
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(p.x, p.y);
+        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+        ctx.stroke();
+    }
+
+    // Labels
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const labelR = r + 20;
+    typeKeys.forEach((k, i) => {
+        const p = getPoint(i, labelR);
+        ctx.fillStyle = 'rgba(232,220,200,0.5)';
+        ctx.font = '9px "Noto Serif SC", serif';
+        ctx.fillText(TYPES[k].code, p.x, p.y);
+    });
+
+    // Data polygon
+    ctx.beginPath();
+    typeKeys.forEach((k, i) => {
+        const val = Math.min(scores[k] || 0, 4);
+        const dist = (val / 4) * r;
+        const p = getPoint(i, dist);
+        i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y);
+    });
+    ctx.closePath();
+
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    grad.addColorStop(0, 'rgba(45,212,191,0.25)');
+    grad.addColorStop(0.5, 'rgba(201,149,60,0.12)');
+    grad.addColorStop(1, 'rgba(201,149,60,0.02)');
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(201,149,60,0.5)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Data points
+    typeKeys.forEach((k, i) => {
+        const val = Math.min(scores[k] || 0, 4);
+        const dist = (val / 4) * r;
+        const p = getPoint(i, dist);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, 2 * Math.PI);
+        ctx.fillStyle = val >= 4 ? 'rgba(201,149,60,0.9)' : 'rgba(45,212,191,0.7)';
+        ctx.fill();
+    });
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, 2, 0, 2 * Math.PI);
+    ctx.fillStyle = 'rgba(232,220,200,0.3)';
+    ctx.fill();
+}
+</script>
+</body>
+</html>
